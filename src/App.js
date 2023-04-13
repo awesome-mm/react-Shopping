@@ -2,14 +2,23 @@ import "./App.css";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import { useState } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import data from "./data";
 // import img from "./bg.png";
 import { Routes, Route, Link, useNavigate, Outlet } from "react-router-dom"; // eslint-disable-line no-unused-vars
 import Datail from "./routes/Datail";
+import axios from "axios";
+import Cart from "./routes/Cart";
+
+export let Context1 = React.createContext();
 
 function App() {
-  const [shoes] = useState(data);
+  let [moreData, setMoreData] = useState(2);
+  let [shoes, setShoes] = useState(data);
+  let [재고, 재고변경] = useState([10, 11, 12]);
+  let [loading, setLoding] = useState(false);
+  let [key, setKey] = useState("home");
+
   let navigate = useNavigate();
 
   // 확장자만 추출하기
@@ -73,6 +82,44 @@ function App() {
                   })}
                 </div>
               </div>
+              {loading == true ? <Loading></Loading> : null}
+
+              {!(moreData == 4) ? (
+                <button
+                  onClick={() => {
+                    setLoding(true);
+                    axios
+                      .get(
+                        "https://codingapple1.github.io/shop/data" +
+                          moreData +
+                          ".json"
+                      )
+                      .then(결과 => {
+                        console.log(결과.data);
+                        let copy = [...shoes, ...결과.data];
+                        setShoes(copy);
+                        // 로딩중 UI 숨기기
+                        setLoding(false);
+                        setMoreData(moreData + 1);
+                      })
+                      .catch(() => {
+                        setLoding(false);
+
+                        console.log("실패함");
+                      });
+
+                    //바꿀 데이터 입력
+                    axios.post("/url", { name: "kim" });
+                    // 여러개의 데이터를 한번에 주고 받을때, then()을 뒤에 붙이면 두개의 요청이 성공했을떄 실행할 수 있음
+                    // Promise.all([axios.get("url"), axios.get("url")]).then();
+
+                    // "{"name" : "kim"}" json은 문자만 주고 받는데 axios가 변환을 알아서 array로 자동 변환 해줌
+                    // 그래서 fecth를 사용할 때는 변환 과정이 필요함
+                    // fetch('url').then(결과 => 결과.json).then(data =>{})
+                  }}>
+                  버튼
+                </button>
+              ) : null}
             </>
           }></Route>
         <Route path="/about" element={<About></About>}>
@@ -88,10 +135,18 @@ function App() {
 
         <Route
           path="/detail/:id"
-          element={<Datail shoes={shoes}></Datail>}></Route>
+          element={
+            <Context1.Provider value={{ 재고, shoes }}>
+              <Datail shoes={shoes}></Datail>
+            </Context1.Provider>
+          }></Route>
+
+        <Route path="/cart" element={<Cart></Cart>}></Route>
 
         <Route path="*" element={<div>없는 페이지임</div>}></Route>
       </Routes>
+
+      {/* <TapComponent tap={tap}></TapComponent> */}
 
       {
         //       {/*  퍼블릭 경로에 있는 걸 가지고 온다면  ./ ../를 사용하지 않고 /만으로 가능하다*/}
@@ -103,6 +158,25 @@ function App() {
         //   alt=""
         // />
       }
+    </div>
+  );
+}
+// props를 { tap } 으로 *부모 컴포넌트에서 props를 tap={tap} 처럼 tap이라는 지정해 둔 이름을 이용해서 생략이 가능하다
+// function TapComponent({ tap }) {
+//   if (tap == 0) {
+//     return <div>내용0</div>;
+//   }
+//   if (tap == 1) {
+//     return <div>내용1</div>;
+//   }
+//   if (tap == 2) {
+//     return <div>내용2</div>;
+//   }
+// }
+function Loading() {
+  return (
+    <div>
+      <p>데이터를 불러오고 있습니다...</p>
     </div>
   );
 }
@@ -145,3 +219,41 @@ function Card(props) {
 }
 
 export default App;
+
+/*
+Context API 사용법
+부모컴포넌트에서 Context API의 이름을 사용해서 부모컴포넌트에서 보내고 싶은 변수들을
+Context1.Provider value안에 State 값을 넣어준다
+export로 변수로 저장된 Context1를 내보내 주어야한다
+
+
+import React, {createContext } from "react";
+
+export let Context1 = React.createContext();
+
+<Context1.Provider value={{ 재고, shoes }}>
+  <Datail shoes={shoes}></Datail>
+</Context1.Provider>
+
+어떤 자식 컴포넌트에서든 계층상관없이 부모의 state가 있고 value값으로 넘겨준다면
+import를 하고 등록한다음 사용이 가능하다
+
+import { Context1 } from "./../App.js";
+
+  function 전역상태관리(){
+
+  let { 재고 } = useContext(Context1);
+
+  return (
+    <div>
+    {재고}
+    </div>
+  ) 
+}
+// Context API 특징 
+// Context API props를 부모에서 자식으로 상속이 많이 되어있을때 데이터를 넘겨주는 것을 편하게 해준다
+// 단점 state 변경시 쓸데없는 컴포넌트까지 전부 재렌더링이 되고 ,
+// useContext()를 쓰고 있는 컴포넌트는 나중에 다른 파일에서 재사용할 때 Context를 import 하는게 귀찮아 질 수 있음
+// 그래서 이것 보다는 redux 같은 외부 라이브러리를 많이 사용한다
+
+*/

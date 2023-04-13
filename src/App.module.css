@@ -1,4 +1,1 @@
-.app {
-  color: #333;
-  background: red !important;
-}
+/* App.module.css 파일은  App에만 종속이 되는 css 파일이 된다 */

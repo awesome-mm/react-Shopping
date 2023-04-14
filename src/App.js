@@ -9,6 +9,8 @@ import { Routes, Route, Link, useNavigate, Outlet } from "react-router-dom"; // 
 import Datail from "./routes/Datail";
 import axios from "axios";
 import Cart from "./routes/Cart";
+import TableComponent from "./routes/Table";
+import DocumentMode from "./routes/Table2";
 
 export let Context1 = React.createContext();
 
@@ -50,6 +52,24 @@ function App() {
                 navigate("/detail");
               }}>
               Detail
+            </Nav.Link>
+            <Nav.Link
+              onClick={() => {
+                navigate("/cart");
+              }}>
+              cart
+            </Nav.Link>
+            <Nav.Link
+              onClick={() => {
+                navigate("/table");
+              }}>
+              table
+            </Nav.Link>
+            <Nav.Link
+              onClick={() => {
+                navigate("/table2");
+              }}>
+              table2
             </Nav.Link>
           </Nav>
         </Container>
@@ -142,6 +162,12 @@ function App() {
           }></Route>
 
         <Route path="/cart" element={<Cart></Cart>}></Route>
+
+        <Route
+          path="/table"
+          element={<TableComponent></TableComponent>}></Route>
+
+        <Route path="/table2" element={<DocumentMode></DocumentMode>}></Route>
 
         <Route path="*" element={<div>없는 페이지임</div>}></Route>
       </Routes>

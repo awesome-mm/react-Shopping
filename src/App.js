@@ -5,23 +5,50 @@ import Navbar from "react-bootstrap/Navbar";
 import React, { useState, useEffect, createContext } from "react";
 import data from "./data";
 // import img from "./bg.png";
-import { Routes, Route, Link, useNavigate, Outlet } from "react-router-dom"; // eslint-disable-line no-unused-vars
+import {
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  Outlet,
+  json,
+} from "react-router-dom"; // eslint-disable-line no-unused-vars
 import Datail from "./routes/Datail";
 import axios from "axios";
 import Cart from "./routes/Cart";
 import TableComponent from "./routes/Table";
 import DocumentMode from "./routes/Table2";
+import Form from "react-bootstrap/Form";
 
 export let Context1 = React.createContext();
 
 function App() {
+  useEffect(() => {
+    localStorage.setItem("watched", JSON.stringify([]));
+  }, []);
+
+  // 로컹 스토리지에 저장하기
+  let obj = { name: "kim" };
+  localStorage.setItem("data", JSON.stringify(obj));
+  let 꺼낸거 = localStorage.getItem("data");
+  console.log(JSON.parse(꺼낸거).name);
+
   let [moreData, setMoreData] = useState(2);
   let [shoes, setShoes] = useState(data);
   let [재고, 재고변경] = useState([10, 11, 12]);
   let [loading, setLoding] = useState(false);
   let [key, setKey] = useState("home");
+  let [sort, setSort] = useState(0);
 
   let navigate = useNavigate();
+
+  useEffect(() => {
+    let copy = [...shoes];
+    copy.sort((a, b) => {
+      return a - b;
+    });
+    setSort(copy);
+  }, [sort]);
 
   // 확장자만 추출하기
   // let [num, setNum] = useState("Loas.jpeg");
@@ -49,7 +76,7 @@ function App() {
             </Nav.Link>
             <Nav.Link
               onClick={() => {
-                navigate("/detail");
+                navigate("/detail/0");
               }}>
               Detail
             </Nav.Link>
@@ -84,12 +111,34 @@ function App() {
         확장자만 제거
       </button> */}
 
+      {/* router에서 보여줄 것들을 Routes에 담는다
+        Route는 path에 링크주소가 들어가고 element에 보여줄 컴포넌트를 작성한다.
+        element속성안에 컴포넌트를 넣어 사용할수도 있다
+       */}
       <Routes>
         <Route
           path="/"
           element={
+            // Fragment는 <Fragment> <Fragment/>로 하나의 태그로 감쌀 떄 사용한다 Fragment는 div가 된다
+            // Fragment 축약문 <></>
+            // Fragment에 키 값을 설정할 수 있다 축약해서 사용하면 안된다
             <>
               <div className="main-bg"></div>
+              <div style={{ width: "50%", margin: "0 auto", display: "block" }}>
+                <Form.Select
+                  className="mt-5 mb-5"
+                  aria-label="Default select example">
+                  <option value="1" onClick={() => {}}>
+                    등록순
+                  </option>
+                  <option value="2" onClick={() => {}}>
+                    이름순
+                  </option>
+                  <option value="3" onClick={() => {}}>
+                    가격순
+                  </option>
+                </Form.Select>
+              </div>
               <div className="container">
                 <div className="row">
                   {shoes.map((ele, index) => {
@@ -102,10 +151,11 @@ function App() {
                   })}
                 </div>
               </div>
-              {loading == true ? <Loading></Loading> : null}
+              {loading === true ? <Loading></Loading> : null}
 
-              {!(moreData == 4) ? (
+              {!(moreData === 4) ? (
                 <button
+                  className="btn btn-success"
                   onClick={() => {
                     setLoding(true);
                     axios
@@ -137,11 +187,18 @@ function App() {
                     // 그래서 fecth를 사용할 때는 변환 과정이 필요함
                     // fetch('url').then(결과 => 결과.json).then(data =>{})
                   }}>
-                  버튼
+                  상품 더보기
                 </button>
               ) : null}
             </>
           }></Route>
+
+        {/* Nested Routes
+        Route태그안에 Route를 넣고 /about/member , /about/location을 표현할 수 있다
+        **<Outlet></Outlet>이라는 태그안에 부모요소와 같이 보여줄 자식요소의 태그상의 위치를 정해야한다
+        **자식컴포넌트만 보이는 것이 아니며 부모와 자식 태그구성 모두 같이 보이게 된다
+        여러 페이지가 유사할때 사용하도록 하자
+        */}
         <Route path="/about" element={<About></About>}>
           <Route path="member" element={<div>멤버임</div>}></Route>
           <Route path="location" element={<div>지도임</div>}></Route>
@@ -228,15 +285,17 @@ function EvnetPage() {
 function Card(props) {
   return (
     <div className="col-md-4">
-      <img
-        src={
-          "https://codingapple1.github.io/shop/shoes" +
-          (props.index + 1) +
-          ".jpg"
-        }
-        width="100%"
-        alt=""
-      />
+      <Link to={"detail/" + props.index}>
+        <img
+          src={
+            "https://codingapple1.github.io/shop/shoes" +
+            (props.index + 1) +
+            ".jpg"
+          }
+          width="100%"
+          alt=""
+        />
+      </Link>
       <h4>{props.shoes.title}</h4>
       <p>{props.shoes.content}</p>
       <p>{props.shoes.price}</p>

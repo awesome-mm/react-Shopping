@@ -1,5 +1,5 @@
 /* eslint eqeqeq: 0 */
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import styled from "styled-components";
 import React, { useContext, useEffect, useState } from "react";
 import Nav from "react-bootstrap/Nav";

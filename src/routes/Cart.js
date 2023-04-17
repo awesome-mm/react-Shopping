@@ -47,7 +47,7 @@ function Cart() {
         <tbody>
           {state.userCart.map((userCartRow, i) => {
             return (
-              <tr>
+              <tr key={i}>
                 <td>{userCartRow.id}</td>
                 <td>{userCartRow.name}</td>
                 <td>{userCartRow.count}</td>

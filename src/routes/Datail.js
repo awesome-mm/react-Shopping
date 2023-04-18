@@ -39,6 +39,20 @@ function Datail(props) {
     return x.id == id;
   });
 
+  useEffect(() => {
+    // 1.누가 detail 페이지 접속하면
+    // 2. 상품 번호를 가지고 와서
+    // 3. localStorage에 보관한다
+
+    console.log(찾은상품);
+    let 최근본상품 = localStorage.getItem("watched");
+    최근본상품 = JSON.parse(최근본상품);
+    최근본상품.push(찾은상품.id);
+    localStorage.setItem("watched", JSON.stringify(최근본상품));
+
+    localStorage.removeItem("data");
+  }, [찾은상품]);
+
   // class 방식 라이프사이킁
   // class Detail2 extends React.Component {
   //   componenttDidMount() {}
@@ -60,11 +74,11 @@ function Datail(props) {
   // return ()=>{}
   // },[sale]);
 
-  useEffect(() => {
-    for (var i = 0; i < 1000; i++) {
-      console.log(`i`);
-    }
-  });
+  // useEffect(() => {
+  //   for (var i = 0; i < 1000; i++) {
+  //     console.log(`i`);
+  //   }
+  // });
 
   // 서버 데이터 요청했을시 2초 소요
   useEffect(() => {

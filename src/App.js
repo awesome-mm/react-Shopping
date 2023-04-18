@@ -23,11 +23,13 @@ import Form from "react-bootstrap/Form";
 export let Context1 = React.createContext();
 
 function App() {
+  // 로컹 스토리지에 저장하기
   useEffect(() => {
+    localStorage.removeItem("data");
+    localStorage.clear();
     localStorage.setItem("watched", JSON.stringify([]));
   }, []);
 
-  // 로컹 스토리지에 저장하기
   let obj = { name: "kim" };
   localStorage.setItem("data", JSON.stringify(obj));
   let 꺼낸거 = localStorage.getItem("data");
@@ -38,15 +40,22 @@ function App() {
   let [재고, 재고변경] = useState([10, 11, 12]);
   let [loading, setLoding] = useState(false);
   let [key, setKey] = useState("home");
-  let [sort, setSort] = useState(0);
+  let [sort, setSort] = useState(1);
 
   let navigate = useNavigate();
 
   useEffect(() => {
     let copy = [...shoes];
-    copy.sort((a, b) => {
-      return a - b;
-    });
+    if (sort === 1) {
+      copy.sort((a, b) => {
+        return a - b;
+      });
+    }
+    if (sort === 2) {
+    }
+    if (sort === 3) {
+    }
+
     setSort(copy);
   }, [sort]);
 

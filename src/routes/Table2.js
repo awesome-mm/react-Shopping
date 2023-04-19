@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import AddFolder from "./AddFolder";
 // 진성님이 주신 코드임
 

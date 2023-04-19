@@ -20,9 +20,6 @@ function Datail(props) {
   let { id } = useParams();
   let [tap, setTap] = useState(0);
 
-  // find 조건에 맞는 id 한개를 리턴하여 찾은상품에 넣어준다
-  // 여러개일 경우 filter를 사용하자
-
   // styled-component
   let YellowBtn = styled.button`
     background: ${props => props.bg};
@@ -48,10 +45,16 @@ function Datail(props) {
     let 최근본상품 = localStorage.getItem("watched");
     최근본상품 = JSON.parse(최근본상품);
     최근본상품.push(찾은상품.id);
+    // Set 자료형을 이용해서 중복자료를 제거 해준 후 다시 Array.from으로 Array형으로 변환해준다.
+    최근본상품 = new Set(최근본상품);
+    최근본상품 = Array.from(최근본상품);
     localStorage.setItem("watched", JSON.stringify(최근본상품));
 
     localStorage.removeItem("data");
   }, [찾은상품]);
+
+  // find 조건에 맞는 id 한개를 리턴하여 찾은상품에 넣어준다
+  // 여러개일 경우 filter를 사용하자
 
   // class 방식 라이프사이킁
   // class Detail2 extends React.Component {

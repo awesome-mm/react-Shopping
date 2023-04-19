@@ -4,6 +4,7 @@ import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import React, { useState, useEffect, createContext } from "react";
 import data from "./data";
+
 // import img from "./bg.png";
 import {
   Routes,
@@ -19,45 +20,67 @@ import Cart from "./routes/Cart";
 import TableComponent from "./routes/Table";
 import DocumentMode from "./routes/Table2";
 import Form from "react-bootstrap/Form";
+import { useQuery } from "@tanstack/react-query";
 
 export let Context1 = React.createContext();
 
 function App() {
-  // 로컹 스토리지에 저장하기
-  useEffect(() => {
-    localStorage.removeItem("data");
-    localStorage.clear();
-    localStorage.setItem("watched", JSON.stringify([]));
-  }, []);
-
-  let obj = { name: "kim" };
-  localStorage.setItem("data", JSON.stringify(obj));
-  let 꺼낸거 = localStorage.getItem("data");
-  console.log(JSON.parse(꺼낸거).name);
-
   let [moreData, setMoreData] = useState(2);
   let [shoes, setShoes] = useState(data);
   let [재고, 재고변경] = useState([10, 11, 12]);
   let [loading, setLoding] = useState(false);
   let [key, setKey] = useState("home");
-  let [sort, setSort] = useState(1);
+  let [sortNum, setSortNum] = useState(1);
 
   let navigate = useNavigate();
 
+  // 로컹 스토리지에 저장하기
+  useEffect(() => {
+    localStorage.clear();
+    localStorage.setItem("watched", JSON.stringify([]));
+  }, []);
+
+  // select value값 저장
+  const handleSelect = e => {
+    setSortNum(Number(e.target.value));
+  };
+
+  // 정렬 버튼 클릭시
   useEffect(() => {
     let copy = [...shoes];
-    if (sort === 1) {
-      copy.sort((a, b) => {
-        return a - b;
+    let sortValue;
+    switch (sortNum) {
+      case 1:
+        sortValue = "id"; // 등록순
+        break;
+      case 2:
+        sortValue = "price"; //가격순
+        break;
+      case 3:
+        sortValue = "title"; //이름순
+        break;
+      default:
+        sortValue = undefined;
+    }
+    if (!sortValue) return;
+
+    console.log(copy[sortValue]);
+    // copy[sortValue].sort((a, b) => a - b);
+    // copy.sort((a, b) => a.sortValue - b.sortValue);
+    if (sortValue === "id" || sortValue === "price") {
+      copy.sort((a, b) => a[sortValue] - b[sortValue]);
+    }
+    if (sortValue === "title") {
+      copy.sort(function (a, b) {
+        if (a.title.toLowerCase() > b.title.toLowerCase()) return 1;
+        else if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
+        else return 0;
       });
     }
-    if (sort === 2) {
-    }
-    if (sort === 3) {
-    }
-
-    setSort(copy);
-  }, [sort]);
+    setShoes(copy);
+    return console.log(copy);
+    // console.log(sortNum);
+  }, [sortNum]);
 
   // 확장자만 추출하기
   // let [num, setNum] = useState("Loas.jpeg");
@@ -65,6 +88,12 @@ function App() {
   // const change = num => {
   //   return setNum(num.split(".").pop());
   // };
+  let result = useQuery(["작명"], () =>
+    axios.get("https://codingapple1.github.io/userdata.json").then(결과 => {
+      console.log("요청됨");
+      return 결과.data;
+    })
+  );
 
   return (
     <div className="App">
@@ -108,6 +137,12 @@ function App() {
               table2
             </Nav.Link>
           </Nav>
+          <Nav className="ms-auto" style={{ color: "white" }}>
+            {/* { result.isLoading ? '로딩중' : result.data.name} */}
+            {result.isLoading && "로딩중"}
+            {result.error && "에러남"}
+            {result.data && result.data.name}
+          </Nav>
         </Container>
       </Navbar>
 
@@ -136,16 +171,12 @@ function App() {
               <div style={{ width: "50%", margin: "0 auto", display: "block" }}>
                 <Form.Select
                   className="mt-5 mb-5"
-                  aria-label="Default select example">
-                  <option value="1" onClick={() => {}}>
-                    등록순
-                  </option>
-                  <option value="2" onClick={() => {}}>
-                    이름순
-                  </option>
-                  <option value="3" onClick={() => {}}>
-                    가격순
-                  </option>
+                  aria-label="Default select example"
+                  onChange={handleSelect}
+                  value={sortNum}>
+                  <option value="1">등록순</option>
+                  <option value="2">가격순</option>
+                  <option value="3">이름순</option>
                 </Form.Select>
               </div>
               <div className="container">

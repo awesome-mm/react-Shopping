@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Table } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import { changeName, increase } from "./../store/userSlice";
 import { addCount } from "./../store";
+
+let Child = memo(function () {
+  console.log("재렌더링됨");
+  return <div>자식임</div>;
+});
+
 function Cart() {
   // redux store를 가지고오는 함수
+
   let state = useSelector(state => {
     return state;
     // return state.stock;
@@ -13,6 +20,7 @@ function Cart() {
   });
 
   let dispatch = useDispatch();
+  let [count, setCount] = useState(0);
 
   // 사이즈가 커지면 좋은방식이다 하지만 귀찮다
   // dispatch는 메세지를 보내다라는 뜻이고 실제 실행은 store.js에서 실행해서 state를 변경한다
@@ -26,6 +34,13 @@ function Cart() {
 
   return (
     <div>
+      <Child></Child>
+      <button
+        onClick={() => {
+          setCount(count + 1);
+        }}>
+        {count}
+      </button>
       {state.user.name}의 장바구니 나이 : {state.user.age}
       <button
         onClick={() => {

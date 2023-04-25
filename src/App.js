@@ -2,7 +2,7 @@ import "./App.css";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, Suspense, useEffect, lazy } from "react";
 import data from "./data";
 
 // import img from "./bg.png";
@@ -14,15 +14,18 @@ import {
   Outlet,
   json,
 } from "react-router-dom"; // eslint-disable-line no-unused-vars
-import Datail from "./routes/Datail";
+
 import axios from "axios";
-import Cart from "./routes/Cart";
 import TableComponent from "./routes/Table";
 import DocumentMode from "./routes/Table2";
 import Form from "react-bootstrap/Form";
 import { useQuery } from "@tanstack/react-query";
+import { useTransition } from "react";
 
 export let Context1 = React.createContext();
+
+const Datail = lazy(() => import("./routes/Datail.js"));
+const Cart = lazy(() => import("./routes/Cart.js"));
 
 function App() {
   let [moreData, setMoreData] = useState(2);
@@ -88,11 +91,16 @@ function App() {
   // const change = num => {
   //   return setNum(num.split(".").pop());
   // };
-  let result = useQuery(["작명"], () =>
-    axios.get("https://codingapple1.github.io/userdata.json").then(결과 => {
-      console.log("요청됨");
-      return 결과.data;
-    })
+
+  //react-query return 두개가 꼭 필요한데 , 중괄호랑 리턴을 생략할 수 있음!
+  let result = useQuery(
+    ["작명"],
+    () =>
+      axios.get("https://codingapple1.github.io/userdata.json").then(결과 => {
+        console.log("요청됨");
+        return 결과.data;
+      }),
+    { staleTime: 2000 } // refetch 시간조절 가능
   );
 
   return (
@@ -159,115 +167,118 @@ function App() {
         Route는 path에 링크주소가 들어가고 element에 보여줄 컴포넌트를 작성한다.
         element속성안에 컴포넌트를 넣어 사용할수도 있다
        */}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            // Fragment는 <Fragment> <Fragment/>로 하나의 태그로 감쌀 떄 사용한다 Fragment는 div가 된다
-            // Fragment 축약문 <></>
-            // Fragment에 키 값을 설정할 수 있다 축약해서 사용하면 안된다
-            <>
-              <div className="main-bg"></div>
-              <div style={{ width: "50%", margin: "0 auto", display: "block" }}>
-                <Form.Select
-                  className="mt-5 mb-5"
-                  aria-label="Default select example"
-                  onChange={handleSelect}
-                  value={sortNum}>
-                  <option value="1">등록순</option>
-                  <option value="2">가격순</option>
-                  <option value="3">이름순</option>
-                </Form.Select>
-              </div>
-              <div className="container">
-                <div className="row">
-                  {shoes.map((ele, index) => {
-                    return (
-                      <Card
-                        key={index}
-                        shoes={shoes[index]}
-                        index={index}></Card>
-                    );
-                  })}
+      <Suspense fallback={<div>로딩중임</div>}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              // Fragment는 <Fragment> <Fragment/>로 하나의 태그로 감쌀 떄 사용한다 Fragment는 div가 된다
+              // Fragment 축약문 <></>
+              // Fragment에 키 값을 설정할 수 있다 축약해서 사용하면 안된다
+              <>
+                <div className="main-bg"></div>
+                <div
+                  style={{ width: "50%", margin: "0 auto", display: "block" }}>
+                  <Form.Select
+                    className="mt-5 mb-5"
+                    aria-label="Default select example"
+                    onChange={handleSelect}
+                    value={sortNum}>
+                    <option value="1">등록순</option>
+                    <option value="2">가격순</option>
+                    <option value="3">이름순</option>
+                  </Form.Select>
                 </div>
-              </div>
-              {loading === true ? <Loading></Loading> : null}
+                <div className="container">
+                  <div className="row">
+                    {shoes.map((ele, index) => {
+                      return (
+                        <Card
+                          key={index}
+                          shoes={shoes[index]}
+                          index={index}></Card>
+                      );
+                    })}
+                  </div>
+                </div>
+                {loading === true ? <Loading></Loading> : null}
 
-              {!(moreData === 4) ? (
-                <button
-                  className="btn btn-success"
-                  onClick={() => {
-                    setLoding(true);
-                    axios
-                      .get(
-                        "https://codingapple1.github.io/shop/data" +
-                          moreData +
-                          ".json"
-                      )
-                      .then(결과 => {
-                        console.log(결과.data);
-                        let copy = [...shoes, ...결과.data];
-                        setShoes(copy);
-                        // 로딩중 UI 숨기기
-                        setLoding(false);
-                        setMoreData(moreData + 1);
-                      })
-                      .catch(() => {
-                        setLoding(false);
+                {!(moreData === 4) ? (
+                  <button
+                    className="btn btn-success"
+                    onClick={() => {
+                      setLoding(true);
+                      axios
+                        .get(
+                          "https://codingapple1.github.io/shop/data" +
+                            moreData +
+                            ".json"
+                        )
+                        .then(결과 => {
+                          console.log(결과.data);
+                          let copy = [...shoes, ...결과.data];
+                          setShoes(copy);
+                          // 로딩중 UI 숨기기
+                          setLoding(false);
+                          setMoreData(moreData + 1);
+                        })
+                        .catch(() => {
+                          setLoding(false);
 
-                        console.log("실패함");
-                      });
+                          console.log("실패함");
+                        });
 
-                    //바꿀 데이터 입력
-                    axios.post("/url", { name: "kim" });
-                    // 여러개의 데이터를 한번에 주고 받을때, then()을 뒤에 붙이면 두개의 요청이 성공했을떄 실행할 수 있음
-                    // Promise.all([axios.get("url"), axios.get("url")]).then();
+                      //바꿀 데이터 입력
+                      axios.post("/url", { name: "kim" });
+                      // 여러개의 데이터를 한번에 주고 받을때, then()을 뒤에 붙이면 두개의 요청이 성공했을떄 실행할 수 있음
+                      // Promise.all([axios.get("url"), axios.get("url")]).then();
 
-                    // "{"name" : "kim"}" json은 문자만 주고 받는데 axios가 변환을 알아서 array로 자동 변환 해줌
-                    // 그래서 fecth를 사용할 때는 변환 과정이 필요함
-                    // fetch('url').then(결과 => 결과.json).then(data =>{})
-                  }}>
-                  상품 더보기
-                </button>
-              ) : null}
-            </>
-          }></Route>
+                      // "{"name" : "kim"}" json은 문자만 주고 받는데 axios가 변환을 알아서 array로 자동 변환 해줌
+                      // 그래서 fecth를 사용할 때는 변환 과정이 필요함
+                      // fetch('url').then(결과 => 결과.json).then(data =>{})
+                    }}>
+                    상품 더보기
+                  </button>
+                ) : null}
+              </>
+            }></Route>
 
-        {/* Nested Routes
+          {/* Nested Routes
         Route태그안에 Route를 넣고 /about/member , /about/location을 표현할 수 있다
         **<Outlet></Outlet>이라는 태그안에 부모요소와 같이 보여줄 자식요소의 태그상의 위치를 정해야한다
         **자식컴포넌트만 보이는 것이 아니며 부모와 자식 태그구성 모두 같이 보이게 된다
         여러 페이지가 유사할때 사용하도록 하자
         */}
-        <Route path="/about" element={<About></About>}>
-          <Route path="member" element={<div>멤버임</div>}></Route>
-          <Route path="location" element={<div>지도임</div>}></Route>
-        </Route>
-        <Route path="/event" element={<EvnetPage></EvnetPage>}>
+          <Route path="/about" element={<About></About>}>
+            <Route path="member" element={<div>멤버임</div>}></Route>
+            <Route path="location" element={<div>지도임</div>}></Route>
+          </Route>
+          <Route path="/event" element={<EvnetPage></EvnetPage>}>
+            <Route
+              path="one"
+              element={<div>첫주문시 양배추즙 서비스</div>}></Route>
+            <Route path="two" element={<div>생일기념 쿠폰받기</div>}></Route>
+          </Route>
+
           <Route
-            path="one"
-            element={<div>첫주문시 양배추즙 서비스</div>}></Route>
-          <Route path="two" element={<div>생일기념 쿠폰받기</div>}></Route>
-        </Route>
+            path="/detail/:id"
+            element={
+              <Context1.Provider value={{ 재고, shoes }}>
+                <Datail shoes={shoes}></Datail>
+              </Context1.Provider>
+            }></Route>
 
-        <Route
-          path="/detail/:id"
-          element={
-            <Context1.Provider value={{ 재고, shoes }}>
-              <Datail shoes={shoes}></Datail>
-            </Context1.Provider>
-          }></Route>
+          <Route path="/cart" element={<Cart></Cart>}></Route>
 
-        <Route path="/cart" element={<Cart></Cart>}></Route>
+          <Route
+            path="/table"
+            element={<TableComponent></TableComponent>}></Route>
 
-        <Route
-          path="/table"
-          element={<TableComponent></TableComponent>}></Route>
+          <Route path="/table2" element={<DocumentMode></DocumentMode>}></Route>
 
-        <Route path="/table2" element={<DocumentMode></DocumentMode>}></Route>
-
-        <Route path="*" element={<div>없는 페이지임</div>}></Route>
-      </Routes>
+          <Route path="*" element={<div>없는 페이지임</div>}></Route>
+        </Routes>
+      </Suspense>
 
       {/* <TapComponent tap={tap}></TapComponent> */}
 

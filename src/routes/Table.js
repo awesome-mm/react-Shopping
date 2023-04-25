@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useDeferredValue, useState, useTransition } from "react";
 import { Table } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import "./../App.css";
 // import "rc-tree/assets/index.css";
+let a = new Array(10000).fill(0);
 
 function TableComponent() {
   let [data, setData] = useState([
@@ -84,6 +85,10 @@ function TableComponent() {
     },
   ]);
 
+  let [naname, setNaname] = useState("");
+  let [isPending, 늦게처리] = useTransition();
+  let nanameState = useDeferredValue(naname);
+
   return (
     <div className="tableContainer">
       <Table>
@@ -131,6 +136,21 @@ function TableComponent() {
           })}
         </tbody>
       </Table>
+      <div>
+        <input
+          type="text"
+          onChange={e => {
+            늦게처리(() => {
+              setNaname(e.target.value);
+            });
+          }}
+        />
+        {isPending
+          ? "로딩중"
+          : a.map((a, i) => {
+              return <div key={i}>{nanameState}</div>;
+            })}
+      </div>
     </div>
   );
 }
